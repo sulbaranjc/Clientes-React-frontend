@@ -19,7 +19,8 @@ const NUM_OF_ITEMS = 10;
 // escoger el servidor a usar
 // const API_URL_SERVER = "http://sulbaranjc.com:3300/"; // cambiar al servidor 
 //const API_URL_SERVER = "http://192.168.1.147:3300/"; //cambiar al servidor por ip
-const API_URL_SERVER = "http://localhost:3150/"; //cambiar a localhost
+//const API_URL_SERVER = "http://localhost:3150/"; //cambiar a localhost
+const API_URL_SERVER = "http://127.0.0.1:8000/"; //cambiar a localhost
 
 
 const API_TABLA_CONTROLLER = "api/clients/";
@@ -51,7 +52,7 @@ const filteredUser = datos.filter((user) => user.last_name.toLowerCase().include
 || user.email.toLowerCase().includes(search.toLowerCase())
 || user.phone_number.toLowerCase().includes(search.toLowerCase())
 || user.address.toLowerCase().includes(search.toLowerCase())
-|| user.client_id === parseInt(search)).slice(currentPage,currentPage+NUM_OF_ITEMS);
+|| user.id === parseInt(search)).slice(currentPage,currentPage+NUM_OF_ITEMS);
 
 
 useEffect(() =>{
@@ -60,7 +61,7 @@ useEffect(() =>{
 
 const cargarDatos = async() => {
   const respuesta = await axios.get(API_TOTAL_CONTROLLER)
-  respuesta.data.sort((a, b) => (a.client_id - b.client_id));
+  respuesta.data.sort((a, b) => (a.id - b.id));
   setDatos(respuesta.data)
  
 }
@@ -95,16 +96,31 @@ const prevPage = () =>{
 
 // const firstPage = () =>{ setCurrentPage(0);}
 
-const activarModificacion = async(id) => {
-  const respuesta = await axios.get(`${API_TOTAL_CONTROLLER}${id}`)
-  setFirst_name(respuesta.data[0].first_name)
-  setLast_name(respuesta.data[0].last_name)
-  setPhone_number(respuesta.data[0].phone_number)
-  setEmail(respuesta.data[0].email)
-  setAddress(respuesta.data[0].address)
-  setvalidacionModificar(true)
-  setIdModificar(id)
-}
+const activarModificacion = async (id) => {
+  try {
+    const url = `${API_TOTAL_CONTROLLER}${id}`;
+
+    const respuesta = await axios.get(url);
+
+    // Asegúrate de que la respuesta es un objeto con las propiedades necesarias.
+    if (respuesta.data) {
+      setFirst_name(respuesta.data.first_name);
+      setLast_name(respuesta.data.last_name);
+      setPhone_number(respuesta.data.phone_number);
+      setEmail(respuesta.data.email);
+      setAddress(respuesta.data.address);
+      setvalidacionModificar(true);
+      setIdModificar(id);
+    } else {
+      // Maneja el caso de que la respuesta no tenga las propiedades esperadas.
+      console.error('La respuesta del API no tiene la estructura esperada.');
+    }
+  } catch (error) {
+    console.error('Error al obtener los datos:', error);
+    // Maneja el error como sea apropiado para tu aplicación.
+  }
+};
+
 
 const LimpiarFormulario= () => {
   setFirst_name("")
@@ -170,20 +186,20 @@ const modificarAlumno = async(e) => {
                 {
                   
                   filteredUser.map(fila => (
-                    <tr key={fila.client_id}>
-                      <td class="align-middle">
+                    <tr key={fila.id}>
+                      <td className="align-middle">
                         <Button className='me-centre' 
-                          variant="warning" size="sm" onClick={()=>activarModificacion(fila.client_id)}>
+                          variant="warning" size="sm" onClick={()=>activarModificacion(fila.id)}>
                             <ion-icon name="create-outline"></ion-icon>
                         </Button>
                       </td>
-                      <td class="align-middle">
+                      <td className="align-middle">
                         <Button variant="danger"
-                        onClick={()=> delClient(fila.client_id)}  
+                        onClick={()=> delClient(fila.id)}  
                         size="sm"><ion-icon name="trash-outline"></ion-icon>
                         </Button>
                       </td>
-                      <td>{fila.client_id}</td>
+                      <td>{fila.id}</td>
                       <td>{fila.first_name}</td>
                       <td>{fila.last_name}</td>
                       <td>{fila.email}</td>
